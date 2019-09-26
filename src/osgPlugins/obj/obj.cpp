@@ -37,10 +37,17 @@ using namespace obj;
 
 static std::string strip( const std::string& ss )
 {
-    std::string result;
-    result.assign( std::find_if( ss.begin(), ss.end(), std::not1( std::ptr_fun< int, int >( isspace ) ) ),
-                   std::find_if( ss.rbegin(), ss.rend(), std::not1( std::ptr_fun< int, int >( isspace ) ) ).base() );
-    return( result );
+    auto it = ss.begin();
+    while( it != ss.end() && isspace(*it) )
+        ++it;
+    if (it==ss.end())
+        return std::string();//string was empty or entirely white-space
+    auto it2 = ss.end();
+    do {
+        --it2;
+    } while (!isspace(*it2));
+    ++it2;
+    return std::string(it,it2);
 }
 
 /*
