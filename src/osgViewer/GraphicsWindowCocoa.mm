@@ -1223,6 +1223,7 @@ bool GraphicsWindowCocoa::realizeImplementation()
     [_view setAutoresizingMask:  (NSViewWidthSizable | NSViewHeightSizable) ];
     [_view setGraphicsWindowCocoa: this];
     [_view setOpenGLContext:_context];
+    [_view setWantsBestResolutionOpenGLSurface: NO];//https://github.com/openscenegraph/OpenSceneGraph/issues/926
 
     // enable multitouch
     if (_multiTouchEnabled || (windowData && windowData->isMultiTouchEnabled()))
