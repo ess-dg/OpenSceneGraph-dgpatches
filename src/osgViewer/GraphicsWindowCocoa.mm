@@ -1071,9 +1071,22 @@ private:
 // init
 // ----------------------------------------------------------------------------------------------------------
 
+
+//Next variable used in init and makeCurrentImplementation():
+static int graphicswindowcocoa_makeCurrentImplementation_allow_context_update = 0;
+#include <stdlib.h>
+
 void GraphicsWindowCocoa::init()
 {
     if (_initialized) return;
+
+    static bool first = true;
+    if (first) {
+        first = false;
+        //See comments in makeCurrentImplementation() for the meaing of this env var:
+        if (getenv("OSG_COCOA_BACKWARDS_COMPAT_CTX_UPDATE"))
+            graphicswindowcocoa_makeCurrentImplementation_allow_context_update = 1;
+    }
 
     _closeRequested = false;
     _ownsWindow = false;
@@ -1306,7 +1319,19 @@ bool GraphicsWindowCocoa:: makeCurrentImplementation()
 {
     if (_updateContext)
     {
-        [_context update];
+        //Get here after resizes.
+        //
+        //As per: https://github.com/golang/go/issues/35177
+        //
+        // "  it's not thread safe to call [ctx update]; inside the makeCurrentContext function. "
+        //
+        //Which explains the crashes seen from here on OSX Catalina.
+        //
+        //So remove the [_context update] call which was previously here (it can
+        //be reenabled by setting the OSG_COCOA_BACKWARDS_COMPAT_CTX_UPDATE
+        //environment variable)
+        if (graphicswindowcocoa_makeCurrentImplementation_allow_context_update)
+            [_context update];
         _updateContext = false;
     }
 
